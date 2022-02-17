@@ -89,7 +89,7 @@ class Ozbot(slash_utils.Bot):
             log.error(f'An exception ocurred trying to load extension {name}', exc_info=e)
 
     async def dynamic_load_cogs(self) -> None:
-        for filename in os.listdir("./cogs"):
+        for filename in os.listdir("/cogs"):
             if filename.endswith(".py"):
                 cog = filename[:-3]
                 if cog not in ['moderation', 'whitelist', 'vcban']:
