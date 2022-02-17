@@ -56,7 +56,7 @@ class Moderation(commands.Cog):
         self.autounmute.start()
 
         # ------------- YAML STUFF -------------#
-        with open(r'files/config.yaml') as file:
+        with open(r'ozbot/files/config.yaml') as file:
             full_yaml = yaml.full_load(file)
             staff_roles = []
             guild = full_yaml['guildID']

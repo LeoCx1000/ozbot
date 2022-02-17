@@ -27,7 +27,7 @@ class modmail(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         #------------- YAML STUFF -------------#
-        with open(r'files/config.yaml') as file:
+        with open(r'ozbot/files/config.yaml') as file:
             full_yaml = yaml.full_load(file)
             staff_roles = []
         self.staff_roles = staff_roles

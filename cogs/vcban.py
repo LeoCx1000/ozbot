@@ -10,7 +10,7 @@ class promote(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # ------------- YAML STUFF -------------#
-        with open(r'files/config.yaml') as file:
+        with open(r'ozbot/files/config.yaml') as file:
             yaml_data = yaml.full_load(file)
         self.main_guild = yaml_data['guildID']
         self.data = yaml_data
