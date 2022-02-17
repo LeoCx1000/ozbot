@@ -3,7 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from ozbot import constants
+import constants
 
 
 class Events(commands.Cog):

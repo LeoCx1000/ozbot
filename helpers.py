@@ -1,7 +1,7 @@
 import datetime
 import parsedatetime as pdt
 from dateutil.relativedelta import relativedelta
-from timeformats import plural, human_join, format_dt as format_dt
+from .timeformats import plural, human_join, format_dt as format_dt
 from discord.ext import commands
 import re
 

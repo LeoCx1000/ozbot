@@ -4,7 +4,7 @@ from discord.errors import HTTPException
 from discord.ext import commands
 from discord.ext.commands.errors import UserNotFound
 
-from ozbot import constants
+import constants
 
 
 class MyFlags(commands.FlagConverter):

@@ -9,7 +9,7 @@ import jishaku.paginators
 from discord.ext import commands
 from discord.ext.commands import BucketType
 
-from ozbot import helpers
+import helpers
 
 
 class handler(commands.Cog):

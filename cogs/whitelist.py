@@ -8,7 +8,7 @@ import discord
 import emoji as unicode_emoji
 from discord.ext import commands
 
-from ozbot.__main__ import Ozbot
+from .__main__ import Ozbot
 
 
 class UnicodeEmoji:

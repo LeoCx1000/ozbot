@@ -7,8 +7,8 @@ import discord
 import tabulate
 from discord.ext import commands
 import jishaku.paginators
-from ozbot import slash_utils
-from ozbot.__main__ import Ozbot
+import slash_utils
+from __main__ import Ozbot
 
 
 def setup(bot):

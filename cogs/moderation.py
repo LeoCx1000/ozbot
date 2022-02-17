@@ -8,8 +8,7 @@ from collections import Counter
 
 from discord.ext import commands, tasks, menus
 
-from ozbot import helpers, constants
-from ozbot.__main__ import Ozbot
+from __main__ import Ozbot
 
 
 class Confirm(menus.Menu):

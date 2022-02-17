@@ -25,7 +25,7 @@ from discord.ext.commands.errors import (
 )
 from dotenv import load_dotenv
 
-from ozbot import helpers, slash_utils
+import helpers, slash_utils
 
 initial_extensions = (
     'jishaku',
