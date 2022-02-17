@@ -85,9 +85,8 @@ class Ozbot(slash_utils.Bot):
     def _load_extension(self, name: str) -> None:
         try:
             self.load_extension(name)
-        except (ExtensionNotFound, ExtensionAlreadyLoaded, NoEntryPointError, ExtensionFailed):
-            traceback.print_exc()
-            print()  # Empty line
+        except Exception as e:
+            log.error(f'An exception ocurred trying to load extension {name}', exc_info=e)
 
     async def dynamic_load_cogs(self) -> None:
         for filename in os.listdir(f"cogs"):
