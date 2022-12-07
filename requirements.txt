@@ -1,0 +1,11 @@
+discord
+asyncpg
+asyncpg-stubs
+python-dotenv
+PyYAML
+emoji
+jishaku
+parsedatetime
+python-dateutil
+discord-ext-menus
+tabulate
