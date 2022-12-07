@@ -7,7 +7,7 @@ import discord
 import tabulate
 from discord.ext import commands
 import jishaku.paginators
-import slash_utils
+from discord import app_commands
 from bot import Ozbot
 
 
@@ -15,34 +15,34 @@ async def setup(bot):
     await bot.add_cog(Coords(bot))
 
 
-class Coords(slash_utils.ApplicationCog):
+class Coords(commands.Cog):
     def __init__(self, bot):
-        super().__init__(bot)
         self.bot: Ozbot = bot
 
-    @slash_utils.slash_command(name="save", guild_id=706624339595886683)
-    @slash_utils.describe(
+    @app_commands.command(name="save")
+    @app_commands.guilds(706624339595886683)
+    @app_commands.describe(
         description="Annotation to add to the saved coordinates.",
         x="X coordinate.",
         z="Z coordinate.",
     )
     async def save_coords(
-        self, ctx: slash_utils.Context, x: int, z: int, description: str
+        self, interaction: discord.Interaction, x: int, z: int, description: str
     ):
         """Saves a coordinate to the public database"""
         try:
             await self.bot.db.execute(
                 "INSERT INTO coords (author, x, z, description) VALUES ($1, $2, $3, $4)",
-                ctx.author.id,
+                interaction.user.id,
                 x,
                 z,
                 description,
             )
         except asyncpg.UniqueViolationError:
-            return await ctx.send(
+            return await interaction.response.send_message(
                 "Someone has already saved that coordinate to the global spreadsheet!"
             )
-        await ctx.send(
+        await interaction.response.send_message(
             f"Coordinate `{x}X {z}Z` saved with annotation: `{discord.utils.remove_markdown(description)}`"[
                 0:2000
             ]
@@ -59,16 +59,17 @@ class Coords(slash_utils.ApplicationCog):
         "By Author Z-A",
     ]
 
-    @slash_utils.slash_command(name="list", guild_id=706624339595886683)
-    @slash_utils.describe(
+    @app_commands.command(name="list")
+    @app_commands.guilds(706624339595886683)
+    @app_commands.describe(
         search="Searches the saved coordinates by description (selecting a suggested result is optional)",
         sort="Sorts the results by the selected criteria.",
     )
     async def list_coords(
         self,
-        ctx: slash_utils.Context,
-        search: slash_utils.Autocomplete[str] = None,
-        sort: SortType = None,
+        interaction: discord.Interaction,
+        search: str | None = None,
+        sort: SortType | None = None,
     ):
         """Lists all coordinates saved to the database"""
         q = "SELECT author, x, z, description FROM coords"
@@ -87,7 +88,7 @@ class Coords(slash_utils.ApplicationCog):
         }
 
         should_sort = None
-        if sort := sort_modes.get(sort):
+        if sort := sort_modes.get(sort):  # type: ignore
             if "Author A-Z" in sort:
                 should_sort = False
             elif "Author Z-A" in sort:
@@ -107,12 +108,12 @@ class Coords(slash_utils.ApplicationCog):
 
         if not coords:
             if not search:
-                return await ctx.send(
+                return await interaction.response.send_message(
                     "There are no coordinates saved! Do `/save` to save one.",
                     ephemeral=True,
                 )
             else:
-                return await ctx.send(
+                return await interaction.response.send_message(
                     "There are no coordinates saved that match your search!",
                     ephemeral=True,
                 )
@@ -134,23 +135,26 @@ class Coords(slash_utils.ApplicationCog):
         )
         [pages.add_line(line) for line in lines]
         interface = jishaku.paginators.PaginatorInterface(self.bot, pages)
-        await interface.send_to(ctx)
+        await interface.send_to(await commands.Context.from_interaction(interaction))
 
-    @list_coords.on_autocomplete("search")
-    async def list_auto(self, _, user_input: str):
+    @list_coords.autocomplete("search")
+    async def list_auto(self, interaction: discord.Interaction, user_input: str):
         query = "SELECT author, description FROM coords WHERE SIMILARITY(description, $1) > 0.1 LIMIT 25"
         results = await self.bot.db.fetch(query, user_input) or []
 
-        return {
-            str(description)[0:100]: str(description)[0:100]
+        return [
+            app_commands.Choice(
+                name=str(description)[0:100], value=str(description)[0:100]
+            )
             for author, description in results
-        }
+        ]
 
-    @slash_utils.slash_command(name="delete", guild_id=706624339595886683)
-    @slash_utils.describe(
+    @app_commands.command(name="delete")
+    @app_commands.guilds(706624339595886683)
+    @app_commands.describe(
         search="Searches trough the descriptions of your saved coordinates."
     )
-    async def delete(self, ctx, search: slash_utils.Autocomplete[str]):
+    async def delete(self, ctx, search: str):
         """Deletes one of your saved coordinates"""
         match = re.search(r"^(?P<X>-?\d+) \| (?P<z>-?\d+)$", search)
         if not match:
@@ -174,7 +178,7 @@ class Coords(slash_utils.ApplicationCog):
             f"Deleted coordinate `{x}X {z}Z` with annotation: `{description}`"[0:2000]
         )
 
-    @delete.on_autocomplete("search")
+    @delete.autocomplete("search")
     async def delete_auto(self, interaction: discord.Interaction, user_input: str):
         if len(user_input) < 3:
             results = (
@@ -194,6 +198,9 @@ class Coords(slash_utils.ApplicationCog):
                 or []
             )
 
-        return {
-            f"{x} | {z}": f"{x}X {z}Z - {description}" for x, z, description in results
-        }
+        return [
+            app_commands.Choice(
+                value=f"{x} | {z}", name=f"{x}X {z}Z - {description}"[0:100]
+            )
+            for x, z, description in results
+        ]

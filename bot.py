@@ -19,7 +19,7 @@ from discord.ext.commands.errors import (
 )
 from dotenv import load_dotenv
 
-import helpers, slash_utils
+import helpers
 
 initial_extensions = ("jishaku",)
 
@@ -48,7 +48,7 @@ target_type = Union[
 ]
 
 
-class Ozbot(slash_utils.Bot):
+class Ozbot(commands.Bot):
     PRE: tuple = ("!",)
 
     def __init__(self, pool: asyncpg.Pool, session: aiohttp.ClientSession) -> None:
@@ -63,9 +63,7 @@ class Ozbot(slash_utils.Bot):
             activity=discord.Activity(
                 type=discord.ActivityType.watching, name="over OZ"
             ),
-            enable_debug_events=True,
             strip_after_prefix=True,
-            slash_command_guilds=[706624339595886683],
         )
 
         self.owner_id = 349373972103561218
