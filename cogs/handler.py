@@ -10,17 +10,17 @@ from discord.ext import commands
 from discord.ext.commands import BucketType
 
 import helpers
-
+from bot import Ozbot
 
 class handler(commands.Cog):
     """🆘 Handle them errors 👀"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: Ozbot):
         self.bot = bot
         self.error_channel = 880181130408636456
 
     @commands.Cog.listener("on_command_error")
-    async def error_handler(self, ctx: commands.Context, error):
+    async def error_handler(self, ctx: commands.Context, error: Exception):
         error = getattr(error, "original", error)
         ignored = (commands.CommandNotFound, commands.DisabledCommand)
         if isinstance(error, ignored):
@@ -28,13 +28,13 @@ class handler(commands.Cog):
         if isinstance(error, ignored):
             return
 
-        if isinstance(error, discord.ext.commands.CheckAnyFailure):
+        if isinstance(error, commands.CheckAnyFailure):
             for e in error.errors:
                 if not isinstance(error, commands.NotOwner):
                     error = e
                     break
 
-        if isinstance(error, discord.ext.commands.BadUnionArgument):
+        if isinstance(error, commands.BadUnionArgument):
             if error.errors:
                 error = error.errors[0]
 
@@ -51,7 +51,7 @@ class handler(commands.Cog):
         if isinstance(error, commands.TooManyArguments):
             return await ctx.send(f"Too many arguments passed to the command!")
 
-        if isinstance(error, discord.ext.commands.MissingPermissions):
+        if isinstance(error, commands.MissingPermissions):
             text = f"You're missing the following permissions: \n**{', '.join(error.missing_permissions)}**"
             embed.description = text
             try:
@@ -64,7 +64,7 @@ class handler(commands.Cog):
                 finally:
                     return
 
-        if isinstance(error, discord.ext.commands.BotMissingPermissions):
+        if isinstance(error, commands.BotMissingPermissions):
             text = f"I'm missing the following permissions: \n**{', '.join(error.missing_permissions)}**"
             try:
                 embed.description = text
@@ -74,7 +74,7 @@ class handler(commands.Cog):
             finally:
                 return
 
-        elif isinstance(error, discord.ext.commands.MissingRequiredArgument):
+        elif isinstance(error, commands.MissingRequiredArgument):
             missing = f"{str(error.param).split(':')[0]}"
             command = f"{ctx.clean_prefix}{ctx.command} {ctx.command.signature}"
             separator = " " * (len(command.split(missing)[0]) - 1)
@@ -122,7 +122,7 @@ class handler(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
-        elif isinstance(error, discord.ext.commands.errors.MaxConcurrencyReached):
+        elif isinstance(error, commands.errors.MaxConcurrencyReached):
             embed = discord.Embed(
                 color=0xD7342A,
                 description=f"Please try again once you are done running the command",
@@ -161,66 +161,12 @@ class handler(commands.Cog):
             )
 
         elif isinstance(error, commands.BadArgument):
-            return await ctx.send(error or "Bad argument given!")
+            return await ctx.send(str(error) or "Bad argument given!")
 
         elif isinstance(error, helpers.NotOz):
             return await ctx.send("Commands are restricted to OZ!")
 
-        error_channel = self.bot.get_channel(self.error_channel)
-
-        traceback_string = "".join(
-            traceback.format_exception(etype=None, value=error, tb=error.__traceback__)
-        )
-
-        await self.bot.wait_until_ready()
-
-        if ctx.me.guild_permissions.administrator:
-            admin = "✅"
-        else:
-            admin = "❌"
-
-        if ctx.guild:
-            command_data = (
-                f"command: {ctx.message.content[0:1700]}"
-                f"\nguild_id: {ctx.guild.id}"
-                f"\nowner_id: {ctx.guild.owner.id}"
-                f"\nbot admin: {admin} "
-                f"- role pos: {ctx.me.top_role.position}"
-            )
-        else:
-            command_data = (
-                f"command: {ctx.message.content[0:1700]}" f"\nCommand executed in DMs"
-            )
-
-        to_send = (
-            f"```yaml\n{command_data}``````py\n{ctx.command} "
-            f"command raised an error:\n{traceback_string}\n```"
-        )
-        if len(to_send) < 2000:
-            try:
-                sent_error = await error_channel.send(to_send)
-
-            except (discord.Forbidden, discord.HTTPException):
-                sent_error = await error_channel.send(
-                    f"```yaml\n{command_data}``````py Command: {ctx.command}"
-                    f"Raised the following error:\n```",
-                    file=discord.File(
-                        io.StringIO(traceback_string), filename="traceback.py"
-                    ),
-                )
-        else:
-            sent_error = await error_channel.send(
-                f"```yaml\n{command_data}``````py Command: {ctx.command}"
-                f"Raised the following error:\n```",
-                file=discord.File(
-                    io.StringIO(traceback_string), filename="traceback.py"
-                ),
-            )
-        try:
-            await sent_error.add_reaction("🗑")
-        except (discord.HTTPException, discord.Forbidden):
-            pass
-        raise error
+        await self.bot.errors.add_error(error=error, ctx=ctx)
 
     @commands.Cog.listener("on_message")
     async def fetch_close_by(self, message: discord.Message):

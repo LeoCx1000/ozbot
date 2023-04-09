@@ -20,6 +20,7 @@ from discord.ext.commands.errors import (
 from dotenv import load_dotenv
 
 import helpers
+from error_manager import ExceptionsManager
 
 initial_extensions = ("jishaku",)
 
@@ -80,6 +81,8 @@ class Ozbot(commands.Bot):
         self.prefixes = {}
 
         self.db: asyncpg.Pool[asyncpg.Record] = pool
+
+        self.errors = ExceptionsManager(self)
 
     async def _load_extension(self, name: str) -> None:
         try:
@@ -143,25 +146,6 @@ class Ozbot(commands.Bot):
         s = "\033[42m"
         logging.info("======[ BOT ONLINE! ]=======")
         logging.info("\033[42mLogged in as " + self.user.name + "\033[0m")
-
-    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
-        traceback_string = traceback.format_exc()
-        logging.error("Error in event %s", event_method)
-        await self.wait_until_ready()
-        error_channel: discord.TextChannel = self.get_channel(880181130408636456)  # type: ignore
-        to_send = (
-            f"```yaml\nAn error occurred in an {event_method} event``````py"
-            f"\n{traceback_string}\n```"
-        )
-        if len(to_send) < 2000:
-            await error_channel.send(to_send)
-        else:
-            await error_channel.send(
-                f"```yaml\nAn error occurred in an {event_method} event``````py",
-                file=discord.File(
-                    io.BytesIO(traceback_string.encode()), filename="traceback.py"
-                ),
-            )
 
     async def setup_hook(self):
         for ext in initial_extensions:
