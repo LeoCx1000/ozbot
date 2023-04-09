@@ -272,13 +272,15 @@ class Whitelist(commands.Cog):
 
     @commands.Cog.listener("on_member_remove")
     async def automatic_whitelist_remover(self, member: discord.Member):
-        logs = self.bot.get_channel(799741426886901850)
-        console = self.bot.get_channel(764631105097170974)
+        if member.guild.id != 706624339595886683:
+            return
+        logs: discord.TextChannel = self.bot.get_channel(799741426886901850)  # type: ignore
+        console: discord.TextChannel = self.bot.get_channel(764631105097170974)  # type: ignore
         uuid: asyncpg.pgproto.pgproto.UUID = await self.bot.db.fetchval(
             "select minecraft_id from usernames where user_id = $1", member.id
         )
         if not uuid:
-            await logs.send(f"Member was not whitelisted.")
+            return await logs.send(f"Member {member} was not whitelisted. Not removing from whitelist")
         req = await self.bot.session.get(
             f"https://api.mojang.com/user/profiles/{uuid}/names"
         )
@@ -294,7 +296,7 @@ class Whitelist(commands.Cog):
                 f"Could not get username for {uuid} - did not remove from whitelist."
             )
         user = member.guild.get_member(799749818062077962)
-        if user.status != discord.Status.online:
+        if not user or user.status != discord.Status.online:
             return await logs.send(
                 f"{user} is not online, so I cannot remove {member} ({name} / {uuid}) from the whitelist."
             )
