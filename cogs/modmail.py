@@ -180,18 +180,29 @@ class modmail(commands.Cog):
             return
         if not member.bot:
             await self.bot.get_channel(706624465378738217).send(
-                f"""{member.mention}, Welcome to {member.guild.name}! Make sure to read and agree to the <#706825075516768297> to get access to the rest of {member.guild.name}."""
+                f"""{member.mention}, Welcome to {member.guild.name}! Make sure to read and agree to the <#706825075516768297> to get access to the rest of {member.guild.name}.""",
+                allowed_mentions=discord.AllowedMentions.all(),
             )
+
+        extra = ""
+        if member.global_name and str(member) != member.global_name:
+            extra = " " + member.global_name
+
         await self.bot.get_channel(708316690638700607).send(
-            f"""{constants.JOINED_SERVER} **{member.name}#{member.discriminator}** joined **{member.guild.name}**!"""
+            f"""{constants.JOINED_SERVER} **{member}{extra}** joined **{member.guild.name}**!"""
         )
 
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         if member.guild.id != 706624339595886683:
             return
+
+        extra = ""
+        if member.global_name and str(member) != member.global_name:
+            extra = " " + member.global_name
+
         await self.bot.get_channel(708316690638700607).send(
-            f"""{constants.LEFT_SERVER} **{member.name}#{member.discriminator}** left **{member.guild.name}**!"""
+            f"""{constants.LEFT_SERVER} **{member}{extra}** left **{member.guild.name}**!"""
         )
 
 
