@@ -103,7 +103,10 @@ class ModMail(commands.Cog):
 
     async def make_thread(self, message: discord.Message) -> discord.Thread:
         thread, _ = await self.forum.create_thread(
-            name=str(message.author), content=f"DM with user of ID: {message.author.id}"
+            name=str(message.author),
+            embed=discord.Embed()
+            .set_author(name=str(message.author.display_name), icon_url=message.author.display_avatar.url)
+            .set_footer(text=f"User ID: {message.author.id}"),
         )
         await self.bot.pool.execute(
             "INSERT INTO dm_modmail (user_id, thread_id) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET thread_id = $2",
@@ -210,6 +213,11 @@ class ModMail(commands.Cog):
             if thread.archived:
                 await thread.edit(archived=False)
             await thread.edit(name=str(after))
+            await thread.get_partial_message(thread.id).edit(
+                embed=discord.Embed()
+                .set_author(name=str(after.display_name), icon_url=after.display_avatar.url)
+                .set_footer(text=f"User ID: {after.id}"),
+            )
 
 
 async def setup(bot):
