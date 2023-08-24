@@ -12,7 +12,7 @@ from utils.error_manager import ErrorManager
 
 from pkgutil import iter_modules
 
-EXTENSIONS = [module.name for module in iter_modules(["cogs"], f"cogs.")]
+EXTENSIONS = [module.name for module in iter_modules(["cogs"], f"cogs.")] + ["jishaku"]
 
 log = getLogger(__name__)
 
