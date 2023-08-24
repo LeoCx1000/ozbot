@@ -59,6 +59,12 @@ class text(commands.Cog):
     @commands.command(aliases=["e"])
     @commands.has_permissions(manage_messages=True)
     async def edit(self, ctx: commands.Context, *, new: str = "--d"):
+        """Edits the message from the bot that you have replied to.
+
+        If no content is passed, then the message will be deleted.
+        If `--d` is added at the end then it will also be deleted.
+        If `--d` is added at the end, then the embeds of the message will be removed.
+        """
         if ctx.message.reference:
             msg = ctx.message.reference.resolved
             assert isinstance(msg, discord.Message)
@@ -66,7 +72,7 @@ class text(commands.Cog):
             try:
                 if msg.author == self.bot.user:
                     if new.endswith("--s"):
-                        await msg.edit(content=new[:-3], suppress=True)
+                        await msg.edit(content=new[:-3] if new[:-3].strip() else msg.content, suppress=True)
                     elif new.endswith("--d"):
                         await msg.delete()
                     else:
