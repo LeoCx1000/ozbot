@@ -50,6 +50,7 @@ async def main():
         aiohttp.ClientSession() as session,
         Bot(pool, session) as bot,
     ):
+        discord.utils.setup_logging()
         await bot.start(os.environ["TOKEN"])
 
 
