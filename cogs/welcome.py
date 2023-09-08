@@ -18,7 +18,7 @@ class Welcome(commands.Cog):
             if isinstance(channel, discord.abc.Messageable):
                 await channel.send(
                     f"{member.mention}, Welcome to {member.guild.name}! Make sure to read and agree "
-                    "to the <#{constants.RULES_CHANNEL}> to get access to the rest of {member.guild.name}.",
+                    f"to the <#{constants.RULES_CHANNEL}> to get access to the rest of {member.guild.name}.",
                     allowed_mentions=discord.AllowedMentions.all(),
                 )
 
