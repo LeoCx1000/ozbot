@@ -95,7 +95,7 @@ class daily_color(commands.Cog):
         self.update_cotd_role.cancel()
         self.remove_newcomers_role.cancel()
 
-    @tasks.loop(time=[datetime.time(hour=i) for i in range(24)])
+    @tasks.loop(time=datetime.time(hour=0))
     async def update_cotd_role(self):
         await do_cotd(self.bot)
 
