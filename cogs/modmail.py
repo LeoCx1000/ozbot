@@ -28,7 +28,7 @@ class NotificationsView(discord.ui.View):
         await interaction.response.defer(ephemeral=True, thinking=True)
         meth = member.remove_roles if (has_role := member.get_role(constants.NOTIFICATIONS_ROLE)) else member.add_roles
         await meth(discord.Object(constants.NOTIFICATIONS_ROLE), reason="Toggled notifications.")
-        await interaction.response.send_message(f"You are {'no longer ' if has_role else ''}subscribed to notifications")
+        await interaction.followup.send(f"You are {'no longer ' if has_role else ''}subscribed to notifications")
 
 
 class Webhook:
@@ -120,9 +120,9 @@ class ModMail(commands.Cog):
 
     async def make_thread(self, message: discord.Message) -> discord.Thread:
         thread, _ = await self.forum.create_thread(
-            content=f"<@&{constants.NOTIFICATIONS_ROLE}",
+            content=f"<@&{constants.NOTIFICATIONS_ROLE}>",
             name=str(message.author),
-            embed=discord.Embed()
+            embed=discord.Embed(color=discord.Colour(15158332), description=f"New ModMail thread from {message.author}")
             .set_author(name=str(message.author.display_name), icon_url=message.author.display_avatar.url)
             .set_footer(text=f"User ID: {message.author.id}"),
             view=NotificationsView(),
