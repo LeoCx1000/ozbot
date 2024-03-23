@@ -15,6 +15,22 @@ class ThreadMessage(discord.Message):
     channel: discord.Thread
 
 
+class NotificationsView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="Toggle Notifications", custom_id="TOGGLE_NOTIFICATIONS")
+    async def toggle_notifications(self, interaction: discord.Interaction, button: discord.ui.Button):
+        member = interaction.user
+
+        if not isinstance(member, discord.Member):
+            return await interaction.response.defer()
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        meth = member.remove_roles if (has_role := member.get_role(constants.NOTIFICATIONS_ROLE)) else member.add_roles
+        await meth(discord.Object(constants.NOTIFICATIONS_ROLE), reason="Toggled notifications.")
+        await interaction.response.send_message(f"You are {'no longer ' if has_role else ''}subscribed to notifications")
+
+
 class Webhook:
     def __init__(self, webhook: discord.Webhook) -> None:
         self.webhook = webhook
@@ -75,6 +91,7 @@ class ModMail(commands.Cog):
         self.bot: Bot = bot
         self.manager: WebhookManager | None = None
         self.concurrency = commands.MaxConcurrency(1, per=commands.BucketType.user, wait=True)
+        self.bot.add_view(NotificationsView())
 
     @property
     def forum(self) -> discord.ForumChannel:
@@ -103,10 +120,13 @@ class ModMail(commands.Cog):
 
     async def make_thread(self, message: discord.Message) -> discord.Thread:
         thread, _ = await self.forum.create_thread(
+            content=f"<@&{constants.NOTIFICATIONS_ROLE}",
             name=str(message.author),
             embed=discord.Embed()
             .set_author(name=str(message.author.display_name), icon_url=message.author.display_avatar.url)
             .set_footer(text=f"User ID: {message.author.id}"),
+            view=NotificationsView(),
+            allowed_mentions=discord.AllowedMentions(roles=True),
         )
         await self.bot.pool.execute(
             "INSERT INTO dm_modmail (user_id, thread_id) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET thread_id = $2",
