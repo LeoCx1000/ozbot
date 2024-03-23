@@ -234,7 +234,7 @@ class ModMail(commands.Cog):
                 await thread.edit(archived=False)
             await thread.edit(name=str(after))
             await thread.get_partial_message(thread.id).edit(
-                embed=discord.Embed()
+                embed=discord.Embed(color=discord.Colour(15158332), description=f"New ModMail thread from {before}")
                 .set_author(name=str(after.display_name), icon_url=after.display_avatar.url)
                 .set_footer(text=f"User ID: {after.id}"),
             )
