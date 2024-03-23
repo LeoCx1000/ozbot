@@ -23,6 +23,7 @@ class Bot(commands.Bot):
             command_prefix=os.environ["PREFIX"],
             intents=discord.Intents.all(),
             allowed_mentions=discord.AllowedMentions.none(),
+            activity=discord.CustomActivity("Message me to contact staff!"),
         )
         self.session = session
         self.pool = pool
